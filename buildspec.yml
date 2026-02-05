@@ -90,7 +90,23 @@ phases:
       # 최초 배포인 경우 ASG 생성, 그렇지 않으면 기존 ASG 업데이트
       - |
         echo "Creating Auto Scaling Group: $TARGET_ASG_NAME";
-        aws autoscaling create-auto-scaling-group --auto-scaling-group-name $TARGET_ASG_NAME --launch-template LaunchTemplateName=$NEW_LAUNCH_TEMPLATE_NAME,Version=\$Latest --min-size 1 --max-size 3 --desired-capacity 1 --target-group-arns $TARGET_GROUP_ARN --vpc-zone-identifier $SUBNETS  --tags Key=Name,Value=$TARGET_ASG_NAME;
+        # Service-Linked Role이 준비될 때까지 retry
+        MAX_ASG_RETRIES=5
+        ASG_RETRY_INTERVAL=10
+        ASG_CREATED=false
+        for i in $(seq 1 $MAX_ASG_RETRIES); do
+          echo "ASG creation attempt $i of $MAX_ASG_RETRIES...";
+          if aws autoscaling create-auto-scaling-group --auto-scaling-group-name $TARGET_ASG_NAME --launch-template LaunchTemplateName=$NEW_LAUNCH_TEMPLATE_NAME,Version=\$Latest --min-size 1 --max-size 3 --desired-capacity 1 --target-group-arns $TARGET_GROUP_ARN --vpc-zone-identifier $SUBNETS --tags Key=Name,Value=$TARGET_ASG_NAME 2>&1; then
+            ASG_CREATED=true
+            break
+          fi
+          echo "ASG creation failed, waiting $ASG_RETRY_INTERVAL seconds before retry...";
+          sleep $ASG_RETRY_INTERVAL;
+        done
+        if [ "$ASG_CREATED" != "true" ]; then
+          echo "Failed to create ASG after $MAX_ASG_RETRIES attempts";
+          exit 1;
+        fi
         sleep 30;
 
         echo "Getting instance IDs for ASG: $TARGET_ASG_NAME";
