@@ -11,6 +11,7 @@ jenkins:
     globalMatrix:
       permissions:
         - "Overall/Administer:ORG_NAME*TEAM_NAME"
+        - "Overall/Administer:sehoon99"
   views:
     - all:
         name: "all"
