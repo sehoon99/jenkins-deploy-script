@@ -40,7 +40,7 @@ chown jenkins:jenkins $JENKINS_CAAS_HOME
 chmod 0755 $JENKINS_CAAS_HOME
 echo "CaaS config directory $JENKINS_CAAS_HOME created."
 
-git clone https://github.com/DevopsArtFactory/jenkins-deploy-script
+git clone https://github.com/sehoon99/jenkins-deploy-script
 
 cp jenkins-deploy-script/jenkins.yaml $JENKINS_CAAS_HOME/jenkins.yaml
 cp jenkins-deploy-script/install-plugin.sh $JENKINS_HOME/install-plugin.sh
