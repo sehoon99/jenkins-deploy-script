@@ -15,10 +15,16 @@ TEAM_NAME="ENV_TEAM_NAME"
 dnf update -y && dnf install -y java-17-amazon-corretto-devel wget git
 
 # Jenkins 저장소 추가
-wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo && rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo && rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 
-# Jenkins 설치
-dnf install -y --nogpgcheck jenkins-2.462.2-1.1
+# Jenkins 설치 (최신 LTS 버전)
+dnf install -y jenkins
+
+# jenkins 사용자가 생성됐는지 확인
+if ! id "jenkins" &>/dev/null; then
+    echo "jenkins user not found, creating..."
+    useradd -r -s /bin/false jenkins
+fi
 
 #efs util 설치
 yum install -y amazon-efs-utils
